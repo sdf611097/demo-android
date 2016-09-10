@@ -9,6 +9,7 @@ import me.jim.demo.retrofit.RetrofitTest;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import rx.Observer;
 
 /**
  * Created by ChunTingLin on 2016/9/10.
@@ -19,21 +20,25 @@ public class Test {
 
     final static String TAG = "TEST";
 
-    public static void testRetrofit(){
-        new RetrofitTest().exec("sdf611097", new Callback<List<Repo>>() {
-            @Override
-            public void onResponse(Call<List<Repo>> call, Response<List<Repo>> response) {
-                log("wa A repo");
-                for (Repo repo : response.body()) {
-                    log(repo.getName());
-                }
-            }
+    public static void testRetrofit() {
+        new RetrofitTest().exec("sdf611097")
+                .subscribe(new Observer<List<Repo>>() {
+                    @Override
+                    public void onCompleted() {
+                    }
 
-            @Override
-            public void onFailure(Call<List<Repo>> call, Throwable t) {
-                log("why fail? " + t.getMessage(), t);
-            }
-        });
+                    @Override
+                    public void onError(Throwable e) {
+                        log("why fail? " + e.getMessage(), e);
+                    }
+
+                    @Override
+                    public void onNext(List<Repo> repos) {
+                        for (Repo repo : repos) {
+                            log(repo.getName());
+                        }
+                    }
+                });
     }
 
 
