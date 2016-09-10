@@ -6,9 +6,14 @@ import me.jim.demo.retrofit.Repo;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Retrofit;
+import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.GET;
 import retrofit2.http.Path;
+import rx.Observable;
+import rx.Observer;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 /**
  * Created by ChunTingLin on 2016/9/10.
@@ -16,21 +21,25 @@ import retrofit2.http.Path;
 public class RetrofitTest {
 
     private GitHubService service;
+
     public RetrofitTest() {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://api.github.com/")
+                .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
         service = retrofit.create(GitHubService.class);
     }
+
     public interface GitHubService {
         @GET("users/{user}/repos")
-        Call<List<Repo>> listRepos(@Path("user") String user);
+        Observable<List<Repo>> listRepos(@Path("user") String user);
     }
 
-    public void exec(String user, Callback<List<Repo>> callback){
-        Call<List<Repo>> call = service.listRepos(user);
-        call.enqueue(callback);
+    public Observable<List<Repo>> exec(String user) {
+        return service.listRepos(user)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
     }
 
 }
